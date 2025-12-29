@@ -6,6 +6,7 @@ A simple Python application that automatically moves your mouse cursor to preven
 
 - Configurable movement interval (default: 60 seconds)
 - Configurable movement range (default: ±5 pixels)
+- **Multi-screen awareness** - keeps mouse movements within the current monitor
 - Graceful shutdown with Ctrl+C
 - Failsafe: move mouse to top-left corner to stop
 - Minimal CPU usage
@@ -127,6 +128,8 @@ mouse-mover/
 ├── run_mouse_mover.bat     # Windows Command Prompt runner
 ├── run_mouse_mover.ps1     # Windows PowerShell runner
 ├── setup_windows.bat       # Windows setup/installer
+├── README.md              # Project documentation
+├── CHANGELOG.md           # Version history and changes
 ├── .gitignore             # Git ignore rules
 └── venv/                  # Virtual environment (auto-created)
 ```
@@ -136,8 +139,10 @@ mouse-mover/
 The runner scripts automatically:
 1. Check for Python 3 installation
 2. Create a virtual environment if it doesn't exist
-3. Install required dependencies (pyautogui)
+3. Install required dependencies (pyautogui, screeninfo)
 4. Run the mouse mover application
+
+The application detects all connected monitors and constrains mouse movements to the monitor where the cursor is currently located. This prevents the mouse from jumping to other screens and interrupting your workflow.
 
 All scripts use absolute paths, so they work correctly even when called via symlinks or from different directories.
 
@@ -153,6 +158,11 @@ All scripts use absolute paths, so they work correctly even when called via syml
 - Check if security software is blocking pyautogui
 - Try running with elevated permissions (sudo/Administrator)
 - Ensure no other mouse automation software is running
+
+**Multi-Monitor Issues**
+- Mouse movements are constrained to the current monitor automatically
+- If monitor detection fails, check that `screeninfo` is properly installed
+- Fallback behavior uses primary monitor or full screen bounds
 
 ### Windows-Specific
 
@@ -223,6 +233,7 @@ sudo yum install python3-tkinter
 ## Dependencies
 
 - `pyautogui==0.9.54` - Mouse and keyboard automation
+- `screeninfo==0.8.1` - Multi-monitor detection and bounds
 
 ## Security Note
 

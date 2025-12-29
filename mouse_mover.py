@@ -12,8 +12,10 @@ from datetime import datetime
 
 try:
     import pyautogui
-except ImportError:
-    print("Error: pyautogui is required. Install it with: pip install pyautogui")
+    from screeninfo import get_monitors
+except ImportError as e:
+    missing_module = str(e).split("'")[1] if "'" in str(e) else "required modules"
+    print(f"Error: {missing_module} is required. Install with: pip install pyautogui screeninfo")
     sys.exit(1)
 
 class MouseMover:
@@ -43,11 +45,49 @@ class MouseMover:
         print(f"\nReceived signal {signum}. Shutting down gracefully...")
         self.running = False
     
+    def get_current_monitor_bounds(self, x, y):
+        """Get the bounds of the monitor containing the given coordinates."""
+        try:
+            monitors = get_monitors()
+            for monitor in monitors:
+                if (monitor.x <= x < monitor.x + monitor.width and 
+                    monitor.y <= y < monitor.y + monitor.height):
+                    return {
+                        'left': monitor.x,
+                        'top': monitor.y,
+                        'right': monitor.x + monitor.width - 1,
+                        'bottom': monitor.y + monitor.height - 1
+                    }
+            
+            # Fallback to primary monitor if not found
+            primary = monitors[0] if monitors else None
+            if primary:
+                return {
+                    'left': primary.x,
+                    'top': primary.y,
+                    'right': primary.x + primary.width - 1,
+                    'bottom': primary.y + primary.height - 1
+                }
+        except Exception as e:
+            print(f"Warning: Could not detect monitors ({e}), using full screen bounds")
+        
+        # Ultimate fallback to pyautogui screen size
+        screen_width, screen_height = pyautogui.size()
+        return {
+            'left': 0,
+            'top': 0,
+            'right': screen_width - 1,
+            'bottom': screen_height - 1
+        }
+    
     def move_mouse(self):
-        """Move the mouse cursor slightly in a random direction."""
+        """Move the mouse cursor slightly in a random direction within the current monitor."""
         try:
             # Get current mouse position
             current_x, current_y = pyautogui.position()
+            
+            # Get bounds of the monitor containing the current mouse position
+            bounds = self.get_current_monitor_bounds(current_x, current_y)
             
             # Generate random movement within the specified range
             dx = random.randint(-self.movement_range, self.movement_range)
@@ -57,17 +97,16 @@ class MouseMover:
             new_x = current_x + dx
             new_y = current_y + dy
             
-            # Ensure the new position is within screen bounds
-            screen_width, screen_height = pyautogui.size()
-            new_x = max(0, min(new_x, screen_width - 1))
-            new_y = max(0, min(new_y, screen_height - 1))
+            # Ensure the new position is within the current monitor bounds
+            new_x = max(bounds['left'], min(new_x, bounds['right']))
+            new_y = max(bounds['top'], min(new_y, bounds['bottom']))
             
             # Move the mouse
             pyautogui.moveTo(new_x, new_y, duration=0.1)
             
             self.move_count += 1
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"[{timestamp}] Mouse moved to ({new_x}, {new_y}) - Move #{self.move_count}")
+            print(f"[{timestamp}] Mouse moved to ({new_x}, {new_y}) on monitor [{bounds['left']},{bounds['top']} to {bounds['right']},{bounds['bottom']}] - Move #{self.move_count}")
             
         except pyautogui.FailSafeException:
             print("FailSafe triggered! Mouse moved to top-left corner. Exiting...")
