@@ -19,16 +19,18 @@ except ImportError as e:
     sys.exit(1)
 
 class MouseMover:
-    def __init__(self, interval=60, movement_range=5):
+    def __init__(self, interval=60, movement_range=5, failsafe=False):
         """
         Initialize the mouse mover.
         
         Args:
             interval (int): Time in seconds between mouse movements (default: 60)
             movement_range (int): Maximum pixels to move in any direction (default: 5)
+            failsafe (bool): Enable failsafe (move mouse to top-left corner to stop) (default: False)
         """
         self.interval = interval
         self.movement_range = movement_range
+        self.failsafe = failsafe
         self.running = True
         self.move_count = 0
         
@@ -37,7 +39,7 @@ class MouseMover:
         signal.signal(signal.SIGTERM, self.signal_handler)
         
         # Configure pyautogui
-        pyautogui.FAILSAFE = True  # Move mouse to top-left corner to stop
+        pyautogui.FAILSAFE = failsafe
         pyautogui.PAUSE = 0.1
     
     def signal_handler(self, signum, frame):
@@ -119,7 +121,10 @@ class MouseMover:
         print(f"Mouse Mover started!")
         print(f"Interval: {self.interval} seconds")
         print(f"Movement range: ±{self.movement_range} pixels")
-        print("Press Ctrl+C to stop or move mouse to top-left corner")
+        print(f"Failsafe: {'Enabled' if self.failsafe else 'Disabled'}")
+        if self.failsafe:
+            print("Move mouse to top-left corner to stop")
+        print("Press Ctrl+C to stop")
         print("-" * 50)
         
         try:
@@ -146,6 +151,8 @@ def main():
                        help="Time in seconds between mouse movements (default: 60)")
     parser.add_argument("-r", "--range", type=int, default=5,
                        help="Maximum pixels to move in any direction (default: 5)")
+    parser.add_argument("-f", "--failsafe", action="store_true",
+                       help="Enable failsafe (move mouse to top-left corner to stop)")
     
     args = parser.parse_args()
     
@@ -159,7 +166,7 @@ def main():
         sys.exit(1)
     
     # Create and start the mouse mover
-    mover = MouseMover(interval=args.interval, movement_range=args.range)
+    mover = MouseMover(interval=args.interval, movement_range=args.range, failsafe=args.failsafe)
     mover.start()
 
 if __name__ == "__main__":

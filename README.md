@@ -8,7 +8,7 @@ A simple Python application that automatically moves your mouse cursor to preven
 - Configurable movement range (default: ±5 pixels)
 - **Multi-screen awareness** - keeps mouse movements within the current monitor
 - Graceful shutdown with Ctrl+C
-- Failsafe: move mouse to top-left corner to stop
+- Optional failsafe: move mouse to top-left corner to stop (disabled by default)
 - Minimal CPU usage
 - Cross-platform compatibility (macOS, Windows, Linux)
 - Automated setup scripts for all platforms
@@ -103,20 +103,24 @@ Once installed, you can run Mouse Mover using:
   # Custom movement range (±10 pixels)
   python mouse_mover.py --range 10
   
-  # Both custom settings
-  python mouse_mover.py --interval 45 --range 3
+  # Enable failsafe feature
+  python mouse_mover.py --failsafe
+  
+  # Both custom settings with failsafe
+  python mouse_mover.py --interval 45 --range 3 --failsafe
   ```
 
 ### Command Line Options
 
 - `-i, --interval`: Time in seconds between mouse movements (default: 60)
 - `-r, --range`: Maximum pixels to move in any direction (default: 5)
+- `-f, --failsafe`: Enable failsafe (move mouse to top-left corner to stop)
 - `-h, --help`: Show help message
 
 ### Stopping the Application
 
 - Press `Ctrl+C` in the terminal, OR
-- Move your mouse to the top-left corner of the screen (failsafe)
+- Move your mouse to the top-left corner of the screen (only if failsafe is enabled with `-f`)
 
 ## Project Structure
 
@@ -209,7 +213,7 @@ sudo yum install python3-tkinter
 
 ## Safety Features
 
-- **Failsafe**: Moving the mouse to the top-left corner immediately stops the application
+- **Optional failsafe**: Moving the mouse to the top-left corner stops the application (disabled by default, enable with `-f`)
 - **Boundary checking**: Mouse movements are constrained within screen boundaries
 - **Graceful shutdown**: Handles interrupt signals properly
 - **Error handling**: Continues running even if individual mouse movements fail
