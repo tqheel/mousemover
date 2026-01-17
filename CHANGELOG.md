@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-01-17
+
+### Fixed
+- **Improved cursor positioning**: Mouse now moves from current user position instead of jumping back to previous automated position
+- Added detection of user mouse movement between automated moves
+- Enhanced logging to show when user has moved the mouse
+- Eliminated jarring cursor jumps when user moves mouse between automated intervals
+
+### Technical Details
+- Added `last_automated_pos` tracking to detect user movement
+- Modified `move_mouse()` method to always calculate movement from current cursor position
+- Added user movement status indicator in log output
+
 ## [2.1.0] - 2025-12-30
 
 ### Changed

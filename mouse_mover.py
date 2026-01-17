@@ -33,6 +33,7 @@ class MouseMover:
         self.failsafe = failsafe
         self.running = True
         self.move_count = 0
+        self.last_automated_pos = None  # Track last automated position
         
         # Set up signal handler for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -85,8 +86,12 @@ class MouseMover:
     def move_mouse(self):
         """Move the mouse cursor slightly in a random direction within the current monitor."""
         try:
-            # Get current mouse position
+            # Get current mouse position (where user actually is now)
             current_x, current_y = pyautogui.position()
+            
+            # Check if user moved mouse since last automated move
+            user_moved = (self.last_automated_pos is None or 
+                         (current_x, current_y) != self.last_automated_pos)
             
             # Get bounds of the monitor containing the current mouse position
             bounds = self.get_current_monitor_bounds(current_x, current_y)
@@ -95,7 +100,7 @@ class MouseMover:
             dx = random.randint(-self.movement_range, self.movement_range)
             dy = random.randint(-self.movement_range, self.movement_range)
             
-            # Calculate new position
+            # Calculate new position based on current position
             new_x = current_x + dx
             new_y = current_y + dy
             
@@ -106,9 +111,13 @@ class MouseMover:
             # Move the mouse
             pyautogui.moveTo(new_x, new_y, duration=0.1)
             
+            # Store this automated position
+            self.last_automated_pos = (new_x, new_y)
+            
             self.move_count += 1
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"[{timestamp}] Mouse moved to ({new_x}, {new_y}) on monitor [{bounds['left']},{bounds['top']} to {bounds['right']},{bounds['bottom']}] - Move #{self.move_count}")
+            user_status = " (user moved)" if user_moved else ""
+            print(f"[{timestamp}] Mouse moved to ({new_x}, {new_y}) on monitor [{bounds['left']},{bounds['top']} to {bounds['right']},{bounds['bottom']}] - Move #{self.move_count}{user_status}")
             
         except pyautogui.FailSafeException:
             print("FailSafe triggered! Mouse moved to top-left corner. Exiting...")
