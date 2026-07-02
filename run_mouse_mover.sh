@@ -26,9 +26,17 @@ if ! command -v pip3 &> /dev/null; then
     exit 1
 fi
 
-# Check if virtual environment exists, create if not
-if [ ! -d "$SCRIPT_DIR/venv" ]; then
-    echo "Creating virtual environment..."
+# Check if virtual environment exists and its interpreter still works.
+# A venv can break if the base Python it was built against is upgraded or
+# removed (e.g. a Homebrew python@3.13 -> 3.14 bump), leaving a dangling
+# interpreter symlink and "bad interpreter" errors. Recreate it if so.
+if [ ! -x "$SCRIPT_DIR/venv/bin/python3" ] || ! "$SCRIPT_DIR/venv/bin/python3" -c "" &>/dev/null; then
+    if [ -d "$SCRIPT_DIR/venv" ]; then
+        echo "Existing virtual environment is broken; recreating..."
+        rm -rf "$SCRIPT_DIR/venv"
+    else
+        echo "Creating virtual environment..."
+    fi
     python3 -m venv "$SCRIPT_DIR/venv"
 fi
 
